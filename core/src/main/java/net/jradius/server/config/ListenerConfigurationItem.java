@@ -114,7 +114,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
                     try
                     {
                         // Instantiate the PacketHandler
-                        command = (EventHandler) Configuration.getBean(cfgClassName);
+                        command = Configuration.getBean(cfgClassName);
                     }
                     catch (Exception e)
                     {
@@ -135,7 +135,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
                 command.setConfig(cfg);
                 
                 if (requestHandlers == null)
-                    requestHandlers = new LinkedList();
+                    requestHandlers = new LinkedList<JRCommand>();
 
                 requestHandlers.add(command);
             }            
@@ -184,7 +184,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
                     
                     try
                     {
-                        command = (EventHandler) Configuration.getBean(cfg.getClassName());
+                        command = Configuration.getBean(cfg.getClassName());
                     }
                     catch (Exception e)
                     {
@@ -197,7 +197,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
                 command.setConfig(cfg);
                 
                 if (requestHandlers == null)
-                    requestHandlers = new LinkedList();
+                    requestHandlers = new LinkedList<JRCommand>();
 
                 requestHandlers.add(command);
             }
@@ -215,7 +215,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
             HandlerConfigurationItem preCfg = null;
 
             // First, look to see if the named handler is a known chain
-            JRCommand command = Configuration.eventHandlerForName(cfg.getHandlerName());
+            EventHandler command = Configuration.eventHandlerForName(cfg.getHandlerName());
 
             if (command == null)
             {
@@ -262,7 +262,7 @@ public class ListenerConfigurationItem extends ConfigurationItem
                 command.setConfig(cfg);
                 
                 if (eventHandlers == null)
-                    eventHandlers = new LinkedList();
+                    eventHandlers = new LinkedList<JRCommand>();
 
                 eventHandlers.add(command);
             }

@@ -21,7 +21,7 @@
 
 package net.jradius.standard;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import net.jradius.dictionary.Attr_AcctDelayTime;
 import net.jradius.dictionary.Attr_AcctInputOctets;
@@ -137,7 +137,7 @@ public class IRAPStandard extends RadiusStandard
      */
     public void checkPacket(RadiusPacket p, long[] ignore) throws StandardViolatedException
     {
-        LinkedList missing = new LinkedList();
+        ArrayList<Long> missing = new ArrayList<Long>();
         boolean testAs8021X = false;
         
         if (isIEEE8021XRequired()) testAs8021X = true;

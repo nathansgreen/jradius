@@ -43,11 +43,11 @@ import net.jradius.session.JRadiusSession;
 public abstract class JRadiusRequest extends JRadiusEvent
 {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	private JRadiusSession session;
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    
+    private JRadiusSession session;
 
     /**
      * @return Returns the return value of the JRadiusRequest
@@ -145,8 +145,8 @@ public abstract class JRadiusRequest extends JRadiusEvent
         RadiusPacket p[] = getPackets();
         if (p[1] != null)
         {
-        	// System.err.println("\n\n\n"+p[1]+"\n\n");
-        	PacketFactory.recycle(p[1]);
+            // System.err.println("\n\n\n"+p[1]+"\n\n");
+            PacketFactory.recycle(p[1]);
         }
         p[1] = np;
     }

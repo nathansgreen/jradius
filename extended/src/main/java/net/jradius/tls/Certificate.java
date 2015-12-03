@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -32,7 +33,7 @@ public class Certificate
     {
         X509CertificateStructure[] certs;
         int left = TlsUtils.readUint24(is);
-        Vector tmp = new Vector();
+        List<X509CertificateStructure> tmp = new Vector<X509CertificateStructure>();
         while (left > 0)
         {
             int size = TlsUtils.readUint24(is);
@@ -42,7 +43,7 @@ public class Certificate
             ByteArrayInputStream bis = new ByteArrayInputStream(buf);
             ASN1InputStream ais = new ASN1InputStream(bis);
             DERObject o = ais.readObject();
-            tmp.addElement(X509CertificateStructure.getInstance(o));
+            tmp.add(X509CertificateStructure.getInstance(o));
             if (bis.available() > 0)
             {
                 throw new IllegalArgumentException(
@@ -52,7 +53,7 @@ public class Certificate
         certs = new X509CertificateStructure[tmp.size()];
         for (int i = 0; i < tmp.size(); i++)
         {
-            certs[i] = (X509CertificateStructure)tmp.elementAt(i);
+            certs[i] = tmp.get(i);
         }
         return new Certificate(certs);
     }
@@ -65,12 +66,12 @@ public class Certificate
      */
     protected void encode(OutputStream os) throws IOException
     {
-        Vector encCerts = new Vector();
+        List<byte[]> encCerts = new Vector<byte[]>();
         int totalSize = 0;
         for (int i = 0; i < this.certs.length; ++i)
         {
             byte[] encCert = certs[i].getEncoded(ASN1Encodable.DER);
-            encCerts.addElement(encCert);
+            encCerts.add(encCert);
             totalSize += encCert.length + 3;
         }
 
@@ -79,7 +80,7 @@ public class Certificate
 
         for (int i = 0; i < encCerts.size(); ++i)
         {
-            byte[] encCert = (byte[])encCerts.elementAt(i);
+            byte[] encCert = encCerts.get(i);
             TlsUtils.writeOpaque24(encCert, os);
         }
     }

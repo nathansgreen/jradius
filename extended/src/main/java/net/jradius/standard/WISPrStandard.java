@@ -21,7 +21,7 @@
 
 package net.jradius.standard;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import net.jradius.dictionary.Attr_AcctDelayTime;
 import net.jradius.dictionary.Attr_AcctInputOctets;
@@ -148,24 +148,24 @@ public class WISPrStandard extends RadiusStandard
      */
     public void checkPacket(RadiusPacket p, long[] ignore) throws StandardViolatedException
     {
-        LinkedList missing = new LinkedList();
+        ArrayList<Long> missing = new ArrayList<Long>();
         
         switch(p.getCode())
         {
-        	case AccessRequest.CODE:
-        	    checkMissing(p, missing, requiredAccessRequest, ignore);
-        		break;
+            case AccessRequest.CODE:
+                checkMissing(p, missing, requiredAccessRequest, ignore);
+                break;
 
-        	case AccessAccept.CODE:
-        	    checkMissing(p, missing, requiredAccessAccept, ignore);
-    			break;
+            case AccessAccept.CODE:
+                checkMissing(p, missing, requiredAccessAccept, ignore);
+                break;
 
-        	case AccessReject.CODE:
-    			break;
+            case AccessReject.CODE:
+                break;
 
-        	case AccountingRequest.CODE:
-        	    checkMissing(p, missing, requiredAccounting, ignore);
-        		break;
+            case AccountingRequest.CODE:
+                checkMissing(p, missing, requiredAccounting, ignore);
+                break;
         }
         if (!missing.isEmpty())
             throw new StandardViolatedException(this.getClass(), missing);

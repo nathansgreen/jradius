@@ -55,9 +55,11 @@ import net.jradius.server.config.ListenerConfigurationItem;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.PoolableObjectFactory;
-import org.apache.commons.pool.impl.SoftReferenceObjectPool;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 
 /**
  * The base abstract class of all Listeners
@@ -65,14 +67,14 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
  * @author Gert Jan Verhoog
  * @author David Bird
  */
-public abstract class TCPListener extends JRadiusThread implements Listener
+public abstract class TCPListener<E extends JRadiusEvent> extends JRadiusThread implements Listener<E, TCPListenerRequest<E>>
 {
-	protected Log log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
 
-	protected boolean active = false;
+    protected boolean active = false;
     protected ListenerConfigurationItem config;
     
-    protected BlockingQueue<ListenerRequest> queue;
+    protected BlockingQueue<TCPListenerRequest<E>> queue;
     
     protected int port = 1814;
     protected int backlog = 1024;
@@ -89,37 +91,36 @@ public abstract class TCPListener extends JRadiusThread implements Listener
     protected String[] sslEnabledProtocols;
     protected String[] sslEnabledCiphers;
 
-    protected ObjectPool requestObjectPool = new SoftReferenceObjectPool(new PoolableObjectFactory() 
-    {
-		public boolean validateObject(Object arg0) {
-			return true;
-		}
-		
-		public void passivateObject(Object arg0) throws Exception {
-		}
-		
-		public Object makeObject() throws Exception {
-			return new TCPListenerRequest();
-		}
-		
-		public void destroyObject(Object arg0) throws Exception {
-		}
-		
-		public void activateObject(Object arg0) throws Exception {
-			TCPListenerRequest req = (TCPListenerRequest) arg0;
-			req.clear();
-		}
-	});
+    protected ObjectPool<TCPListenerRequest<E>> requestObjectPool = new SoftReferenceObjectPool<TCPListenerRequest<E>>(
+        new BasePooledObjectFactory<TCPListenerRequest<E>>()
+        {
+            @Override
+            public TCPListenerRequest<E> create() throws Exception {
+                return new TCPListenerRequest<E>();
+            }
+
+            @Override
+            public PooledObject<TCPListenerRequest<E>> wrap(TCPListenerRequest<E> obj) {
+                return new DefaultPooledObject<TCPListenerRequest<E>>(obj);
+            }
+
+            @Override
+            public void activateObject(PooledObject<TCPListenerRequest<E>> arg0) throws Exception {
+                TCPListenerRequest req = arg0.getObject();
+                req.clear();
+            }
+        }
+    );
     
 
     public void setConfiguration(ListenerConfigurationItem cfg) 
     {
-    	try {
-    		setConfiguration(cfg, false);
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		RadiusLog.error("Invalid JRadius configuration.", e);
-    	}
+        try {
+            setConfiguration(cfg, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            RadiusLog.error("Invalid JRadius configuration.", e);
+        }
     }
 
     public void setConfiguration(ListenerConfigurationItem cfg, boolean noKeepAlive) 
@@ -155,67 +156,67 @@ public abstract class TCPListener extends JRadiusThread implements Listener
             
             if (keyManager != null && keyManager.length() > 0)
             {
-    			try {
-    				KeyManager manager = (KeyManager) Configuration.getBean(keyManager);
-    	        	keyManagers = new KeyManager[] { manager };
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			}
+                try {
+                    KeyManager manager = Configuration.getBean(keyManager);
+                    keyManagers = new KeyManager[] { manager };
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             else
             {
-	            String keystore         = (String) props.get("keyStore");
-	            String keystoreType     = (String) props.get("keyStoreType");
-	            String keystorePassword = (String) props.get("keyStorePassword");
-	            String keyPassword      = (String) props.get("keyPassword");
-	            
-	            if (keystore != null)
-	            {
-	                if (keystoreType == null) keystoreType = "pkcs12";
-	
-	                KeyStore ks = KeyStore.getInstance(keystoreType);
-	                ks.load(new FileInputStream(keystore), keystorePassword == null ? null : keystorePassword.toCharArray());
-	
-	                KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-	                kmf.init(ks, keyPassword == null ? null : keyPassword.toCharArray());
-	                keyManagers = kmf.getKeyManagers();
-	            }
+                String keystore         = (String) props.get("keyStore");
+                String keystoreType     = (String) props.get("keyStoreType");
+                String keystorePassword = (String) props.get("keyStorePassword");
+                String keyPassword      = (String) props.get("keyPassword");
+                
+                if (keystore != null)
+                {
+                    if (keystoreType == null) keystoreType = "pkcs12";
+    
+                    KeyStore ks = KeyStore.getInstance(keystoreType);
+                    ks.load(new FileInputStream(keystore), keystorePassword == null ? null : keystorePassword.toCharArray());
+    
+                    KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+                    kmf.init(ks, keyPassword == null ? null : keyPassword.toCharArray());
+                    keyManagers = kmf.getKeyManagers();
+                }
             }
             
             String trustManager = (String) props.get("trustManager");
 
             if (trustManager != null && trustManager.length() > 0)
             {
-    			try {
-    	        	TrustManager manager = (TrustManager) Configuration.getBean(trustManager);
-    	            trustManagers = new TrustManager[] { manager };
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			}
+                try {
+                    TrustManager manager = Configuration.getBean(trustManager);
+                    trustManagers = new TrustManager[] { manager };
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             else if ("true".equalsIgnoreCase(trustAll))
             {
                 trustManagers = new TrustManager[]{ new X509TrustManager()
                 {
-                	public void checkClientTrusted(X509Certificate[] chain, String authType) 
-                	{
-                		
-                	}
-                	public void checkServerTrusted(X509Certificate[] chain, String authType) 
-                	{
-                		
-                	}
-                	public X509Certificate[] getAcceptedIssuers() 
-                	{ 
-                		return new X509Certificate[0]; 
-                	}
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) 
+                    {
+                        
+                    }
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) 
+                    {
+                        
+                    }
+                    public X509Certificate[] getAcceptedIssuers() 
+                    { 
+                        return new X509Certificate[0]; 
+                    }
                 }};
             }
             else
             {
-            	String keystore         = (String) props.get("caStore");
-            	String keystoreType     = (String) props.get("caStoreType");
-            	String keystorePassword = (String) props.get("caStorePassword");
+                String keystore         = (String) props.get("caStore");
+                String keystoreType     = (String) props.get("caStoreType");
+                String keystorePassword = (String) props.get("caStorePassword");
 
                 if (keystore != null)
                 {
@@ -237,22 +238,22 @@ public abstract class TCPListener extends JRadiusThread implements Listener
             serverSocket = sslServerSocket;
 
             if (sslWantClientAuth)
-            	sslServerSocket.setWantClientAuth(true);
+                sslServerSocket.setWantClientAuth(true);
             
             if (sslNeedClientAuth)
-            	sslServerSocket.setNeedClientAuth(true);
+                sslServerSocket.setNeedClientAuth(true);
             
             if (sslEnabledProtocols != null)
-            	sslServerSocket.setEnabledProtocols(sslEnabledProtocols);
+                sslServerSocket.setEnabledProtocols(sslEnabledProtocols);
             
             if (sslEnabledCiphers != null)
-	            sslServerSocket.setEnabledCipherSuites(sslEnabledCiphers);
+                sslServerSocket.setEnabledCipherSuites(sslEnabledCiphers);
 
             usingSSL = true;
         }
         else
         {
-        	serverSocket = new ServerSocket(port, backlog);
+            serverSocket = new ServerSocket(port, backlog);
         }
         
         serverSocket.setReuseAddress(true);
@@ -264,7 +265,7 @@ public abstract class TCPListener extends JRadiusThread implements Listener
      * 
      * @param q the RequestQueue;
      */
-    public void setRequestQueue(BlockingQueue<ListenerRequest> q)
+    public void setRequestQueue(BlockingQueue<TCPListenerRequest<E>> q)
     {
         queue = q;
     }
@@ -290,11 +291,11 @@ public abstract class TCPListener extends JRadiusThread implements Listener
         RadiusLog.debug("Listening on socket...");
         Socket socket = serverSocket.accept();
 
-    	socket.setTcpNoDelay(false);
+        socket.setTcpNoDelay(false);
 
         if (keepAlive)
         {
-        	KeepAliveListener keepAliveListener = new KeepAliveListener(socket, this, queue);
+            KeepAliveListener keepAliveListener = new KeepAliveListener<E>(socket, this, queue);
             keepAliveListener.start();
 
             synchronized (keepAliveListeners)
@@ -304,9 +305,9 @@ public abstract class TCPListener extends JRadiusThread implements Listener
         }
         else
         {
-        	TCPListenerRequest lr = (TCPListenerRequest) requestObjectPool.borrowObject();
-        	lr.setBorrowedFromPool(requestObjectPool);
-        	lr.accept(socket, this, false, false);
+            TCPListenerRequest<E> lr = requestObjectPool.borrowObject();
+            lr.setBorrowedFromPool(requestObjectPool);
+            lr.accept(socket, this, false, false);
 
             while(true)
             {
@@ -366,7 +367,7 @@ public abstract class TCPListener extends JRadiusThread implements Listener
             }
             catch(SocketException e)
             {
-            	if (getActive() == false)
+                if (getActive() == false)
                 {
                     break;
                 }

@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * @author David Bird
  */
-public class TCPListenerRequest extends ListenerRequest
+public class TCPListenerRequest<E extends JRadiusEvent> extends ListenerRequest<E, TCPListenerRequest<E>>
 {
     private Socket socket;
     private InputStream bin;
@@ -44,59 +44,59 @@ public class TCPListenerRequest extends ListenerRequest
     {
     }
     
-    public TCPListenerRequest(Socket socket, Listener listener, boolean getEvent, boolean keepAlive) throws Exception
+    public TCPListenerRequest(Socket socket, TCPListener<E> listener, boolean getEvent, boolean keepAlive) throws Exception
     {
-    	accept(socket, listener, getEvent, keepAlive);
+        accept(socket, listener, getEvent, keepAlive);
     }
     
-    public TCPListenerRequest(Socket socket, InputStream bin, OutputStream bout, Listener listener, boolean getEvent, boolean keepAlive) throws Exception
+    public TCPListenerRequest(Socket socket, InputStream bin, OutputStream bout, TCPListener<E> listener, boolean getEvent, boolean keepAlive) throws Exception
     {
-    	accept(socket, bin, bout, listener, getEvent, keepAlive);
+        accept(socket, bin, bout, listener, getEvent, keepAlive);
     }
     
-    public void accept(Socket socket, Listener listener, boolean getEvent, boolean keepAlive) throws Exception
+    public void accept(Socket socket, TCPListener<E> listener, boolean getEvent, boolean keepAlive) throws Exception
     {
-    	accept(socket, new BufferedInputStream(socket.getInputStream(), 4096), new BufferedOutputStream(socket.getOutputStream(), 4096), listener, getEvent, keepAlive);
+        accept(socket, new BufferedInputStream(socket.getInputStream(), 4096), new BufferedOutputStream(socket.getOutputStream(), 4096), listener, getEvent, keepAlive);
     }
     
-    public void accept(Socket socket, InputStream bin, OutputStream bout, Listener listener, boolean getEvent, boolean keepAlive) throws Exception
+    public void accept(Socket socket, InputStream bin, OutputStream bout, TCPListener<E> listener, boolean getEvent, boolean keepAlive) throws Exception
     {
-    	this.listener = listener;
-    	this.socket = socket;
-    	this.bin = bin;
-    	this.bout = bout;
-    	this.keepAlive = keepAlive;
+        this.listener = listener;
+        this.socket = socket;
+        this.bin = bin;
+        this.bout = bout;
+        this.keepAlive = keepAlive;
         
         if (getEvent)
         {
             this.event = getEventFromListener();
         }
-	}
+    }
 
-	public InputStream getInputStream() throws IOException
+    public InputStream getInputStream() throws IOException
     {
-    	return bin;
+        return bin;
     }
 
     public OutputStream getOutputStream() throws IOException
     {
-    	return bout;
+        return bout;
     }
 
-	public Map<String, String> getServerVariables() 
-	{
-		Map<String, String> result = new HashMap<String, String>();
-		result.put("REMOTE_ADDR", socket.getInetAddress().getHostAddress());
-		return result;
-	}
-	
+    public Map<String, String> getServerVariables() 
+    {
+        Map<String, String> result = new HashMap<String, String>();
+        result.put("REMOTE_ADDR", socket.getInetAddress().getHostAddress());
+        return result;
+    }
+    
     public Socket getSocket() 
     {
         return socket;
     }
 
-	public boolean isKeepAlive() 
-	{
-		return this.keepAlive;
-	}
+    public boolean isKeepAlive() 
+    {
+        return this.keepAlive;
+    }
 }

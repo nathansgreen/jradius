@@ -66,14 +66,14 @@ public class Configuration
     private static boolean debug;
     private static int timeoutSeconds;
     private static File configFile;
-    private static Map<String, ListenerConfigurationItem> listeners = new LinkedHashMap<String, ListenerConfigurationItem>();
-    private static Map packetHandlers = new LinkedHashMap();
-    private static Map eventHandlers = new LinkedHashMap();
-    private static Map dictionaries = new LinkedHashMap();
+    private static final Map<String, ListenerConfigurationItem> listeners = new LinkedHashMap<String, ListenerConfigurationItem>();
+    private static final Map<String, PacketHandlerConfigurationItem> packetHandlers = new LinkedHashMap<String, PacketHandlerConfigurationItem>();
+    private static final Map<String, HandlerConfigurationItem> eventHandlers = new LinkedHashMap<String, HandlerConfigurationItem>();
+    private static final Map<String, DictionaryConfigurationItem> dictionaries = new LinkedHashMap<String, DictionaryConfigurationItem>();
 
     private static BeanFactory beanFactory;
-    private static JRConfigParser parser = new JRConfigParser();
-    private static CatalogFactory factory = CatalogFactory.getInstance();
+    private static final JRConfigParser parser = new JRConfigParser();
+    private static final CatalogFactory factory = CatalogFactory.getInstance();
     private static LogConfigurationItem logConfig;
     
     public static void initialize(File file) throws FileNotFoundException, ConfigurationException
@@ -84,7 +84,7 @@ public class Configuration
  
     public static void initialize(InputStream input, BeanFactory factory) throws FileNotFoundException, ConfigurationException
     {
-        //let new initalization configure it's own logger
+        //let new initialization configure it's own logger
         logConfig = null;
 
         beanFactory = factory;
@@ -146,12 +146,12 @@ public class Configuration
 
     public static PacketHandlerConfigurationItem packetHandlerConfigurationForName(String name)
     {
-        return (PacketHandlerConfigurationItem) packetHandlers.get(name);
+        return packetHandlers.get(name);
     }
     
     public static HandlerConfigurationItem eventHandlerConfigurationForName(String name)
     {
-        return (HandlerConfigurationItem) eventHandlers.get(name);
+        return eventHandlers.get(name);
     }
     
     public static JRCommand packetHandlerForName(String name)
@@ -160,13 +160,15 @@ public class Configuration
         return (JRCommand)getCommand(name);
     }
     
-    public static JRCommand eventHandlerForName(String name)
+    @SuppressWarnings("unchecked")
+    public static <C extends JRCommand> C eventHandlerForName(String name)
     {
         // XXX: our getCommand() will be replaced with factory.getCommand()
-        return (JRCommand)getCommand(name);
+        return (C)getCommand(name);
     }
     
-    public static Command getCommand(String commandID) throws IllegalArgumentException 
+    @SuppressWarnings("unchecked")
+    public static <C extends Command> C getCommand(String commandID) throws IllegalArgumentException
     {
         // XXX: This function taken from CVS version of CatalogFactory
         String DELIMITER = ":";
@@ -207,7 +209,7 @@ public class Configuration
             }
         }
 
-        return catalog.getCommand(commandName);                    
+        return (C) catalog.getCommand(commandName);
     }
 
     /**
@@ -222,7 +224,7 @@ public class Configuration
     
     public static ListenerConfigurationItem listenerConfigurationForName(String name)
     {
-        return (ListenerConfigurationItem) listeners.get(name);
+        return listeners.get(name);
     }
 
     /**
@@ -237,13 +239,13 @@ public class Configuration
     
     public static DictionaryConfigurationItem dictionaryConfigurationForName(String name)
     {
-        return (DictionaryConfigurationItem) dictionaries.get(name);
+        return dictionaries.get(name);
     }
 
     /**
      * The number of seconds to wait for packets, corresponding to
      * the &lt;timeout&gt; option in the configuration file. If
-     * this is 0 (zero), wait indefinately (i.e. waiting will
+     * this is 0 (zero), wait indefinitely (i.e. waiting will
      * never time out).
      * @return The number of seconds to wait for packets
      */
@@ -348,7 +350,7 @@ public class Configuration
             // takes use of the new logger.
             try
             {
-                RadiusLogger logger = (RadiusLogger)Configuration.getBean(logConfig.getClassName());
+                RadiusLogger logger = Configuration.getBean(logConfig.getClassName());
                 RadiusLog.setRadiusLogger(logger);
                 RadiusLog.debug("Configuring RadiusLogger " + logConfig.getName() + ": " + logger.getClass().getName());
             }
@@ -448,7 +450,7 @@ public class Configuration
                 try
                 {
                     RadiusLog.debug("Session Manager (" + requester + "): " + clazz);
-                    JRadiusSessionManager manager = (JRadiusSessionManager) getBean(clazz);
+                    JRadiusSessionManager manager = getBean(clazz);
                     JRadiusSessionManager.setManager(requester, manager);
                 }
                 catch (Exception e)
@@ -462,7 +464,7 @@ public class Configuration
                 try
                 {
                     RadiusLog.debug("Session Key Provider (" + requester + "): " + keyProvider);
-                    SessionKeyProvider provider = (SessionKeyProvider) getBean(keyProvider);
+                    SessionKeyProvider provider = getBean(keyProvider);
                     JRadiusSessionManager.getManager(requester).setSessionKeyProvider(requester, provider);
                 }
                 catch (Exception e)
@@ -476,7 +478,7 @@ public class Configuration
                 try
                 {
                     RadiusLog.debug("Session Factory (" + requester + "): " + sessionFactory);
-                    SessionFactory factory = (SessionFactory) getBean(sessionFactory);
+                    SessionFactory factory = getBean(sessionFactory);
                     factory.setConfig(xmlCfg, node);
                     JRadiusSessionManager.getManager(requester).setSessionFactory(requester, factory);
                 }
@@ -488,7 +490,8 @@ public class Configuration
         }
     }
 
-    public static Object getBean(String name) throws IllegalAccessException, ClassNotFoundException, InstantiationException
+    @SuppressWarnings("unchecked")
+    public static <T> T getBean(String name) throws IllegalAccessException, ClassNotFoundException, InstantiationException
     {
         Object o = null;
         if (name == null) return null;
@@ -499,7 +502,7 @@ public class Configuration
         }
         else
         {
-            Class clazz = Class.forName(name);
+            Class<?> clazz = Class.forName(name);
             if (clazz == null) return null;
             o = clazz.newInstance();
             if (o instanceof BeanFactoryAware)
@@ -525,7 +528,7 @@ public class Configuration
                 }
             }
         }
-        return o;
+        return (T) o;
     }
     
     private static void setRealmManagerConfig()
@@ -548,7 +551,7 @@ public class Configuration
                 try
                 {
                     RadiusLog.debug("Realm Factory (" + requester + "): " + realmFactory);
-                    RealmFactory factory = (RealmFactory) getBean(realmFactory);
+                    RealmFactory factory = getBean(realmFactory);
                     factory.setConfig(xmlCfg, node);
                     JRadiusRealmManager.getManager().setRealmFactory(requester, factory);
                 }

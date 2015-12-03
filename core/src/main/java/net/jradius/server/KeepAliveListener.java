@@ -31,19 +31,19 @@ import net.jradius.log.RadiusLog;
 /**
  * @author David Bird
  */
-public class KeepAliveListener extends JRadiusThread
+public class KeepAliveListener<E extends JRadiusEvent> extends JRadiusThread
 {
     private Socket socket;
-    private TCPListener listener;
-    private BlockingQueue<ListenerRequest> queue;
+    private TCPListener<E> listener;
+    private BlockingQueue<TCPListenerRequest<E>> queue;
     private BufferedInputStream bin;
     private BufferedOutputStream bout;
     
-    public KeepAliveListener(Socket socket, TCPListener listener, BlockingQueue<ListenerRequest> queue) throws IOException
+    public KeepAliveListener(Socket socket, TCPListener<E> listener, BlockingQueue<TCPListenerRequest<E>> queue) throws IOException
     {
         this.socket = socket;
-    	this.bin = new BufferedInputStream(socket.getInputStream(), 4096);
-    	this.bout = new BufferedOutputStream(socket.getOutputStream(), 4096);
+        this.bin = new BufferedInputStream(socket.getInputStream(), 4096);
+        this.bout = new BufferedOutputStream(socket.getOutputStream(), 4096);
         this.listener = listener;
         this.queue = queue;
     }
@@ -56,9 +56,9 @@ public class KeepAliveListener extends JRadiusThread
         {
             while (true)
             {
-            	TCPListenerRequest lr = (TCPListenerRequest) listener.requestObjectPool.borrowObject();
-            	lr.setBorrowedFromPool(listener.requestObjectPool);
-            	lr.accept(this.socket, this.bin, this.bout, this.listener, true, true);
+                TCPListenerRequest<E> lr = listener.requestObjectPool.borrowObject();
+                lr.setBorrowedFromPool(listener.requestObjectPool);
+                lr.accept(this.socket, this.bin, this.bout, this.listener, true, true);
 
                 if (lr == null || lr.event == null)
                 {

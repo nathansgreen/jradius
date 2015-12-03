@@ -773,10 +773,12 @@ public class Base64
      * Object within. Returns <tt>null</tt> if there was an error.
      *
      * @param encodedObject The Base64 data to decode
+     * @param <T> the type of object returned
      * @return The decoded and deserialized object
      * @since 1.5
      */
-    public static Object decodeToObject( String encodedObject )
+    @SuppressWarnings("unchecked")
+    public static <T> T decodeToObject( String encodedObject )
     {
         // Decode and gunzip if necessary
         byte[] objBytes = decode( encodedObject );
@@ -808,7 +810,7 @@ public class Base64
             try{ ois.close();  } catch( Exception e ){}
         }   // end finally
         
-        return obj;
+        return (T) obj;
     }   // end decodeObject
     
     

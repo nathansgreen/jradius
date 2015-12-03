@@ -28,7 +28,7 @@ import net.jradius.handler.chain.JRCommand;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool2.ObjectPool;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -38,9 +38,9 @@ import org.springframework.context.ApplicationContextAware;
  * @author Gert Jan Verhoog
  * @author David Bird
  */
-public abstract class Processor extends JRadiusThread implements ApplicationContextAware
+public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread implements ApplicationContextAware
 {
-	protected Log log = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
 
     private ApplicationContext applicationContext;
 
@@ -48,7 +48,7 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
     
     private List<JRCommand> requestHandlers;
     
-    private BlockingQueue<ListenerRequest> queue;
+    private BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> queue;
     
     private boolean active = true;
 
@@ -62,12 +62,12 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
      * 
      * @param q the RequestQueue;
      */
-    public void setRequestQueue(BlockingQueue<ListenerRequest> q)
+    public void setRequestQueue(BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> q)
     {
         queue = q;
     }
 
-    public BlockingQueue<ListenerRequest> getRequestQueue()
+    public BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> getRequestQueue()
     {
         return queue;
     }
@@ -92,7 +92,7 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
         return requestHandlers;
     }
 
-    protected abstract void processRequest(ListenerRequest listenerRequest) throws Exception;
+    protected abstract void processRequest(ListenerRequest<E, ? extends ListenerRequest> listenerRequest) throws Exception;
 
     public void run()
     {
@@ -105,11 +105,11 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
             }
             catch (InterruptedException e)
             {
-            	e.printStackTrace();
+                e.printStackTrace();
             }
             catch (Throwable e)
             {
-            	e.printStackTrace();
+                e.printStackTrace();
                 log.error("Error in radius task Processor", e);
             }
         }
@@ -119,26 +119,26 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
     {
         Object queueElement = this.queue.take();
 
-		if (!(queueElement instanceof ListenerRequest))
+        if (!(queueElement instanceof ListenerRequest))
         {
             throw new IllegalArgumentException("Expected ListenerRequest but found " + queueElement.getClass().getName());
         }
 
-		ListenerRequest request = (ListenerRequest) queueElement;
+        ListenerRequest request = (ListenerRequest) queueElement;
 
-		try
-		{
-			processRequest(request);
-		}
-		finally
-		{
-			ObjectPool pool = request.getBorrowedFromPool();
-			
-	        if (pool != null)
-	        {
-	        	pool.returnObject(request);
-	        }
-		}
+        try
+        {
+            processRequest(request);
+        }
+        finally
+        {
+            ObjectPool<ListenerRequest<E, ? extends ListenerRequest>> pool = request.getBorrowedFromPool();
+
+            if (pool != null)
+            {
+                  pool.returnObject(request);
+            }
+        }
     }
 
     public ApplicationContext getApplicationContext()
@@ -146,6 +146,7 @@ public abstract class Processor extends JRadiusThread implements ApplicationCont
         return applicationContext;
     }
 
+    // @Override
     public void setApplicationContext(ApplicationContext applicationContext)
     {
         this.applicationContext = applicationContext;

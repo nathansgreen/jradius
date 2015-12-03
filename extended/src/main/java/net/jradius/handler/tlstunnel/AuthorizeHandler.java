@@ -21,6 +21,7 @@
 package net.jradius.handler.tlstunnel;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.jradius.dictionary.Attr_EAPType;
@@ -47,7 +48,7 @@ import org.apache.commons.chain.Catalog;
  */
 public class AuthorizeHandler extends RadiusSessionHandler
 {
-    private HashMap terminatedRealms = new HashMap();
+    private Map<String, String> terminatedRealms = new HashMap<String, String>();
     private Cache tlsTunnels;
     private String anonUserName;
     private String chainName;

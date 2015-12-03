@@ -27,37 +27,38 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool2.ObjectPool;
 
 /**
+ * @param <I> implementation of {@code ListenerRequest}
  * @author David Bird
  */
-public abstract class ListenerRequest
+public abstract class ListenerRequest<E extends JRadiusEvent, I extends ListenerRequest<E, I>>
 {
-    protected JRadiusEvent event;
-    protected Listener listener;
-    protected ObjectPool borrowedFromPool;
+    protected E event;
+    protected Listener<E, I> listener;
+    protected ObjectPool<I> borrowedFromPool;
     
     public ListenerRequest()
     {
     }
 
-    public ListenerRequest(Listener listener)
+    public ListenerRequest(Listener<E, I> listener)
     {
         this.listener = listener;
     }
     
-	public ByteBuffer getByteBufferIn() throws IOException
-	{
-		return null;
-	}
+    public ByteBuffer getByteBufferIn() throws IOException
+    {
+        return null;
+    }
 
-	public ByteBuffer getByteBufferOut() throws IOException
-	{
-		return null;
-	}
+    public ByteBuffer getByteBufferOut() throws IOException
+    {
+        return null;
+    }
 
-	public abstract InputStream getInputStream() throws IOException;
+    public abstract InputStream getInputStream() throws IOException;
 
     public abstract OutputStream getOutputStream() throws IOException;
 
@@ -68,20 +69,20 @@ public abstract class ListenerRequest
         return listener;
     }
 
-    public void getListener(Listener listener)
+    public void getListener(Listener<E, I> listener)
     {
-    	this.listener = listener;
+        this.listener = listener;
     }
 
-    public JRadiusEvent getEventFromListener() throws Exception
+    public E getEventFromListener() throws Exception
     {
-        JRadiusEvent e = listener.parseRequest(this, getByteBufferIn(), getInputStream());
+        E e = listener.parseRequest((I) this, getByteBufferIn(), getInputStream());
         if (e == null) return null;
         e.setListener(listener);
         return e;
     }
     
-    public JRadiusEvent getRequestEvent() throws Exception
+    public E getRequestEvent() throws Exception
     {
         if (event == null)
         {
@@ -93,14 +94,14 @@ public abstract class ListenerRequest
     
     public void clear()
     {
-    	event = null;
+        event = null;
     }
 
-	public ObjectPool getBorrowedFromPool() {
-		return borrowedFromPool;
-	}
+    public ObjectPool<I> getBorrowedFromPool() {
+        return borrowedFromPool;
+    }
 
-	public void setBorrowedFromPool(ObjectPool borrowedFromPool) {
-		this.borrowedFromPool = borrowedFromPool;
-	}
+    public void setBorrowedFromPool(ObjectPool<I> borrowedFromPool) {
+        this.borrowedFromPool = borrowedFromPool;
+    }
 }

@@ -6,21 +6,21 @@ import java.util.concurrent.BlockingQueue;
 
 import net.jradius.server.config.ListenerConfigurationItem;
 
-public interface Listener {
+public interface Listener<E extends JRadiusEvent, L extends ListenerRequest<E, ? extends ListenerRequest>> {
 
-	public void setConfiguration(ListenerConfigurationItem cfg) throws Exception;
+    public void setConfiguration(ListenerConfigurationItem cfg) throws Exception;
 
-	public void setRequestQueue(BlockingQueue<ListenerRequest> queue);
-	
-	//public void setRequestObjectPool(ObjectPool pool);
+    public void setRequestQueue(BlockingQueue<L> queue);
+    
+    //public void setRequestObjectPool(ObjectPool pool);
 
-	public String getName();
+    public String getName();
 
-	public JRadiusEvent parseRequest(ListenerRequest listenerRequest, ByteBuffer byteBuffer, InputStream inputStream) throws Exception;
+    public E parseRequest(L listenerRequest, ByteBuffer byteBuffer, InputStream inputStream) throws Exception;
 
-	public void start();
+    public void start();
 
-	public void stop();
+    public void stop();
 
     public boolean getActive();
 

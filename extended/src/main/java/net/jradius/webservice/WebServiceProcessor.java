@@ -49,44 +49,44 @@ import net.jradius.server.TCPListenerRequest;
  * 
  * @author David Bird
  */
-public class WebServiceProcessor extends Processor
+public class WebServiceProcessor extends Processor<WebServiceRequest>
 {
-	protected static final byte[] newline = toHTTPBytes("\r\n");
-	protected static final byte[] ctype = toHTTPBytes("Content-Type: text/xml\r\n");
-	protected static final byte[] clength = toHTTPBytes("Content-Length: ");
-	protected static final byte[] server = toHTTPBytes("Server: JRadius\r\n");  
-	protected static final byte[] conclose = toHTTPBytes("Connection: close\r\n");
-	protected static final byte[] ok = toHTTPBytes(" 200 OK\r\n");
-	protected static final byte[] found = toHTTPBytes(" 302 Found\r\n");
-	protected static final byte[] unauthorized = toHTTPBytes(" 401 Unauthorized\r\n");
-	private boolean wantClientCertificates = true;
+    protected static final byte[] newline = toHTTPBytes("\r\n");
+    protected static final byte[] ctype = toHTTPBytes("Content-Type: text/xml\r\n");
+    protected static final byte[] clength = toHTTPBytes("Content-Length: ");
+    protected static final byte[] server = toHTTPBytes("Server: JRadius\r\n");  
+    protected static final byte[] conclose = toHTTPBytes("Connection: close\r\n");
+    protected static final byte[] ok = toHTTPBytes(" 200 OK\r\n");
+    protected static final byte[] found = toHTTPBytes(" 302 Found\r\n");
+    protected static final byte[] unauthorized = toHTTPBytes(" 401 Unauthorized\r\n");
+    private boolean wantClientCertificates = true;
     
-	protected void processRequest(ListenerRequest listenerRequest) throws Exception
-	{
-		TCPListenerRequest tcpListenerRequest = (TCPListenerRequest)listenerRequest;
-		Socket socket = tcpListenerRequest.getSocket();
-		socket.setSoTimeout(15000); // 15 second read timeout
+    protected void processRequest(ListenerRequest<WebServiceRequest, ? extends ListenerRequest> listenerRequest) throws Exception
+    {
+        TCPListenerRequest<WebServiceRequest> tcpListenerRequest = (TCPListenerRequest<WebServiceRequest>) listenerRequest;
+        Socket socket = tcpListenerRequest.getSocket();
+        socket.setSoTimeout(15000); // 15 second read timeout
         
-		X509Certificate x509 = null;
+        X509Certificate x509 = null;
         
         if (socket instanceof SSLSocket && wantClientCertificates)
         {
-        	SSLSocket sslSocket = (SSLSocket) socket;
-        	sslSocket.setWantClientAuth(true);
-        	try
-        	{
-            	SSLSession sslSession = sslSocket.getSession();
-	        	Certificate[] certs = sslSession.getPeerCertificates();
-				if (certs != null)
-				{
-					Certificate cert = certs[0];
-					if (cert instanceof X509Certificate)
-						x509 = (X509Certificate) cert;
-				}
-			} 
-			catch (Throwable e) 
-			{
-			}
+            SSLSocket sslSocket = (SSLSocket) socket;
+            sslSocket.setWantClientAuth(true);
+            try
+            {
+                SSLSession sslSession = sslSocket.getSession();
+                Certificate[] certs = sslSession.getPeerCertificates();
+                if (certs != null)
+                {
+                    Certificate cert = certs[0];
+                    if (cert instanceof X509Certificate)
+                        x509 = (X509Certificate) cert;
+                }
+            } 
+            catch (Throwable e) 
+            {
+            }
         }
         
         WebServiceRequest request = null;
@@ -94,7 +94,7 @@ public class WebServiceProcessor extends Processor
 
         try
         {
-            request = (WebServiceRequest) listenerRequest.getRequestEvent();
+            request = tcpListenerRequest.getRequestEvent();
             request.setServerVariableMap(listenerRequest.getServerVariables());
             request.setCertificate(x509);
             request.setApplicationContext(getApplicationContext());
@@ -107,16 +107,16 @@ public class WebServiceProcessor extends Processor
         {
             if (os != null)
             {
-            	try { os.flush(); } catch (Exception e) { }
+                try { os.flush(); } catch (Exception e) { }
             }
 
             if (!tcpListenerRequest.isKeepAlive())
             {
-	            if (os != null)
-	            {
-	            	try { os.close(); } catch (Exception e) { }
-	            }
-	            socket.close();
+                if (os != null)
+                {
+                    try { os.close(); } catch (Exception e) { }
+                }
+                socket.close();
             }
         }
     }
@@ -158,7 +158,7 @@ public class WebServiceProcessor extends Processor
     
     protected void processRequest(WebServiceRequest request)
     {
-    	runHandlers(request);
+        runHandlers(request);
     }
 
     private void sendResponse(WebServiceRequest request, OutputStream out) throws IOException
@@ -173,11 +173,11 @@ public class WebServiceProcessor extends Processor
         }
 
         writeResponse(out, request.getHttpVersion(), response.getHeaders(), 
-        		response.getContent(), response.getSendFile());
+                response.getContent(), response.getSendFile());
     }
     
     private void writeResponse(OutputStream writer, String httpVersion, Map headers,
-    		byte[] payload, File sendFile) throws IOException
+            byte[] payload, File sendFile) throws IOException
     {
         boolean wroteCT = false;
         boolean wroteCL = false;
@@ -187,7 +187,7 @@ public class WebServiceProcessor extends Processor
         if (headers.get("Location") != null)
             writer.write(found);
         else if (headers.get("WWW-Authenticate") != null)
-        	writer.write(unauthorized);
+            writer.write(unauthorized);
         else
             writer.write(ok);
         
@@ -207,26 +207,26 @@ public class WebServiceProcessor extends Processor
         if (!wroteCT) writer.write(ctype);
         if (!wroteCL)
         {
-        	long totalLength = payload == null ? 0 : payload.length;
-        	totalLength += sendFile == null ? 0 : sendFile.length();
+            long totalLength = payload == null ? 0 : payload.length;
+            totalLength += sendFile == null ? 0 : sendFile.length();
             writer.write(clength);
             writer.write(toHTTPBytes(Long.toString(totalLength)));
             writer.write(newline);
         }
         writer.write(newline);
         if (payload != null)
-        	writer.write(payload);
+            writer.write(payload);
         if (sendFile != null)
         {
-        	int len;
-        	byte[] data = new byte[512];
-        	InputStream in = new FileInputStream(sendFile);
-        	do {
-        		len = in.read(data);
-        		if (len > 0)
-        			writer.write(data, 0, len);
-        	} while (len > 0);
-        	in.close();
+            int len;
+            byte[] data = new byte[512];
+            InputStream in = new FileInputStream(sendFile);
+            do {
+                len = in.read(data);
+                if (len > 0)
+                    writer.write(data, 0, len);
+            } while (len > 0);
+            in.close();
         }
     }
 
@@ -242,8 +242,8 @@ public class WebServiceProcessor extends Processor
     
     protected static byte[] toHTTPBytes(String text)
     {
-    	if (text == null) text = "";
-    	
+        if (text == null) text = "";
+        
         try
         {
             return text.getBytes("US-ASCII");

@@ -170,19 +170,19 @@ public class TlsProtocolHandler
 
     public TlsProtocolHandler() 
     {
-    	this.rs = new RecordStream(this);
-    	this.random = createSecureRandom();
-	}
+        this.rs = new RecordStream(this);
+        this.random = createSecureRandom();
+    }
 
-	SecureRandom getRandom()
+    SecureRandom getRandom()
     {
         return random;
     }
-	
-	public void setSendCertificate(boolean b)
-	{
-		this.isSendCertificate = b;
-	}
+    
+    public void setSendCertificate(boolean b)
+    {
+        this.isSendCertificate = b;
+    }
 
     protected void processData(short protocol, byte[] buf, int offset, int len) throws IOException
     {
@@ -405,7 +405,7 @@ public class TlsProtocolHandler
                         if (extendedClientHello)
                         {
                             // Integer -> byte[]
-                            Hashtable serverExtensions = new Hashtable();
+                            Hashtable<Integer, byte[]> serverExtensions = new Hashtable<Integer, byte[]>();
 
                             if (is.available() > 0)
                             {
@@ -418,7 +418,7 @@ public class TlsProtocolHandler
                                     int extType = TlsUtils.readUint16(ext);
                                     byte[] extValue = TlsUtils.readOpaque16(ext);
 
-                                    serverExtensions.put(new Integer(extType), extValue);
+                                    serverExtensions.put(extType, extValue);
                                 }
                             }
 
@@ -458,7 +458,7 @@ public class TlsProtocolHandler
 
                         if (isClientCertificateRequested)
                         {
-                        	sendClientCertificate(tlsClient.getCertificate());
+                            sendClientCertificate(tlsClient.getCertificate());
                         }
 
                         /*
@@ -572,7 +572,7 @@ public class TlsProtocolHandler
 
                         assertEmpty(is);
 
-                        ArrayList authorityDNs = new ArrayList();
+                        ArrayList<X509Name> authorityDNs = new ArrayList<X509Name>();
 
                         ByteArrayInputStream bis = new ByteArrayInputStream(authorities);
                         while (bis.available() > 0)
@@ -913,24 +913,24 @@ public class TlsProtocolHandler
 
     public void writeApplicationData(ByteArrayInputStream is, ByteArrayOutputStream os, byte[] b) throws IOException
     {
-    	/*
-    	 * We will now read data, until we have completed the handshake.
-    	 */
-    	rs.setInputStream(is);
-    	rs.setOutputStream(os);
-    	writeData(b, 0, b.length);
-    	this.tlsInputStream = new TlsInputStream(this);
+        /*
+         * We will now read data, until we have completed the handshake.
+         */
+        rs.setInputStream(is);
+        rs.setOutputStream(os);
+        writeData(b, 0, b.length);
+        this.tlsInputStream = new TlsInputStream(this);
         this.tlsOutputStream = new TlsOutputStream(this);
     }
 
     public byte[] readApplicationData(ByteArrayInputStream is, ByteArrayOutputStream os) throws IOException
     {
-    	/*
-    	 * We will now read data, until we have completed the handshake.
-    	 */
-    	rs.setInputStream(is);
-    	rs.setOutputStream(os);
-    	return readApplicationData();
+        /*
+         * We will now read data, until we have completed the handshake.
+         */
+        rs.setInputStream(is);
+        rs.setOutputStream(os);
+        return readApplicationData();
     }
 
     protected byte[] readApplicationData() throws IOException
@@ -969,7 +969,7 @@ public class TlsProtocolHandler
             }
             catch (RuntimeException e)
             {
-            	e.printStackTrace();
+                e.printStackTrace();
                 if (!this.closed)
                 {
                     this.failWithError(AL_fatal, AP_internal_error);
@@ -987,13 +987,13 @@ public class TlsProtocolHandler
 
     public short updateConnectState(ByteArrayInputStream is, ByteArrayOutputStream os) throws IOException
     {
-    	rs.setInputStream(is);
-    	rs.setOutputStream(os);
-    	while (connection_state != CS_DONE && rs.hasMore())
-    	{
-    		rs.readData();
-    	}
-    	return connection_state;
+        rs.setInputStream(is);
+        rs.setOutputStream(os);
+        while (connection_state != CS_DONE && rs.hasMore())
+        {
+            rs.readData();
+        }
+        return connection_state;
     }
 
     /**
@@ -1232,13 +1232,13 @@ public class TlsProtocolHandler
         return false;
     }
 
-	public void setKeyManagers(KeyManager[] keyManagers) {
-		this.keyManagers = keyManagers;
-	}
+    public void setKeyManagers(KeyManager[] keyManagers) {
+        this.keyManagers = keyManagers;
+    }
 
-	public void setTrustManagers(TrustManager[] trustManagers) {
-		this.trustManagers = trustManagers;
-	}
+    public void setTrustManagers(TrustManager[] trustManagers) {
+        this.trustManagers = trustManagers;
+    }
 
 //    private byte[] CreateRenegotiationInfo(byte[] renegotiated_connection) throws IOException
 //    {

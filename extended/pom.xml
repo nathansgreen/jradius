@@ -7,44 +7,41 @@
   <name>${project.artifactId}-${project.version}</name>
   <version>1.1.6-SNAPSHOT</version>
   <description>JRadius Extended</description>
-  
+
   <parent>
     <groupId>net.jradius</groupId>
     <artifactId>jradius</artifactId>
     <version>1.1.6-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  
+
   <dependencies>
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-core</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
-    
+
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-dictionary</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15</artifactId>
-      <version>1.44</version>
     </dependency>
-    
+
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.5</source>
-	  <target>1.5</target>
-	</configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
       </plugin>
     </plugins>
   </build>

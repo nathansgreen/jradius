@@ -86,7 +86,7 @@ public class WebServiceRequest extends JRadiusEvent
 
     public String getContentAsString() throws UnsupportedEncodingException
     {
-    	return getContent() == null ? null : new String(getContent(), "UTF-8");
+        return getContent() == null ? null : new String(getContent(), "UTF-8");
     }
     
     /**
@@ -168,26 +168,26 @@ public class WebServiceRequest extends JRadiusEvent
         return response;
     }
     /**
-     * @param response The response to set.
+     * @param reply The response to set.
      */
     public void setResponse(WebServiceResponse reply)
     {
         this.response = reply;
     }
 
-	public Object getSessionObject() {
-		return sessionObject;
-	}
+    public Object getSessionObject() {
+        return sessionObject;
+    }
 
-	public void setSessionObject(Object sessionObject) {
-		this.sessionObject = sessionObject;
-	}
+    public void setSessionObject(Object sessionObject) {
+        this.sessionObject = sessionObject;
+    }
 
-	public Map<String, String> getParameterMap() {
+    public Map<String, String> getParameterMap() {
         /**
          * Get the query string parameters
          */
-		String qs = getUri().getQuery();
+        String qs = getUri().getQuery();
         HashMap<String, String> map = new HashMap<String, String>();
         if (qs != null)
         {
@@ -200,52 +200,52 @@ public class WebServiceRequest extends JRadiusEvent
                 {
                     String k = param.substring(0, i);
                     String v = param.substring(i+1, param.length());
-                	try
-                	{
-	                    map.put(k, URLDecoder.decode(v));
-                	}
-                	catch (Exception e)
-                	{
-	                    map.put(k, v);
-                	}
+                    try
+                    {
+                        map.put(k, URLDecoder.decode(v));
+                    }
+                    catch (Exception e)
+                    {
+                        map.put(k, v);
+                    }
                 }
             }
         }
         
         if (serverVariableMap != null)
-        	map.putAll(serverVariableMap);
+            map.putAll(serverVariableMap);
         
         return map;
-	}
-	
-	public String toString()
-	{
-		return getHeaderMap().toString();
-	}
+    }
+    
+    public String toString()
+    {
+        return getHeaderMap().toString();
+    }
 
-	public void setCertificate(X509Certificate x509) 
-	{
-		clientCertificate = x509;
-	}
-	
-	public X509Certificate getCertificate()
-	{
-		return clientCertificate;
-	}
+    public void setCertificate(X509Certificate x509) 
+    {
+        clientCertificate = x509;
+    }
+    
+    public X509Certificate getCertificate()
+    {
+        return clientCertificate;
+    }
 
-	public Map<String, String> getServerVariableMap() {
-		return serverVariableMap;
-	}
+    public Map<String, String> getServerVariableMap() {
+        return serverVariableMap;
+    }
 
-	public void setServerVariableMap(Map<String, String> serverVariableMap) {
-		this.serverVariableMap = serverVariableMap;
-	}
+    public void setServerVariableMap(Map<String, String> serverVariableMap) {
+        this.serverVariableMap = serverVariableMap;
+    }
 
-	public Object getUserObject() {
-		return userObject;
-	}
+    public Object getUserObject() {
+        return userObject;
+    }
 
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
-	}
+    public void setUserObject(Object userObject) {
+        this.userObject = userObject;
+    }
 }

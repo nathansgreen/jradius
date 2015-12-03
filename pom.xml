@@ -46,39 +46,150 @@
     </repository>
   </distributionManagement>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.6</version>
+      <version>4.8</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>net.jradius</groupId>
+        <artifactId>jradius-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jradius</groupId>
+        <artifactId>jradius-dictionary</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jradius</groupId>
+        <artifactId>jradius-extended</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jradius</groupId>
+        <artifactId>jradius-example</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>3.2.12.RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context-support</artifactId>
+        <version>3.2.12.RELEASE</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-configuration</groupId>
+        <artifactId>commons-configuration</artifactId>
+        <version>1.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-chain</groupId>
+        <artifactId>commons-chain</artifactId>
+        <version>1.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-digester</groupId>
+        <artifactId>commons-digester</artifactId>
+        <version>2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-pool2</artifactId>
+        <version>2.4.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.sf.ehcache</groupId>
+        <artifactId>ehcache-core</artifactId>
+        <version>2.4.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.12</version>
+      </dependency>
+
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jmx</groupId>
+            <artifactId>jmxri</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jdmk</groupId>
+            <artifactId>jmxtools</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>gnu-getopt</groupId>
+        <artifactId>getopt</artifactId>
+        <version>1.0.13</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15</artifactId>
+        <version>1.45</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <plugins>
-       <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <version>2.0-beta-9</version>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.5</source>
-	  <target>1.5</target>
-	</configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
       </plugin>
     </plugins>
-<!--
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh-external</artifactId>
-      </extension>
-    </extensions>
--->
+    <!--
+        <extensions>
+          <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ssh-external</artifactId>
+          </extension>
+        </extensions>
+    -->
     <defaultGoal>install</defaultGoal>
   </build>
 
@@ -107,6 +218,7 @@
           </plugin>
           <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.3</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -138,10 +250,10 @@
     <module>example</module>
     <module>apps</module>
     <module>client</module>
-<!--
-    <module>applet</module>
-    <module>ssl</module>
--->
+    <!--
+        <module>applet</module>
+        <module>ssl</module>
+    -->
     <module>server</module>
   </modules>
 
@@ -179,16 +291,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.3</version>
         <configuration>
-	  <minmemory>128m</minmemory>
+          <minmemory>128m</minmemory>
           <maxmemory>1g</maxmemory>
-	  <stylesheetfile>${basedir}/../html/style.css</stylesheetfile>
-	  <doctitle><![CDATA[<h1>${project.description} ${project.version}</h1>]]></doctitle>
-	  <bottom><![CDATA[<i>Copyright &#169; 2011 <a target="top" href="http://www.coova.org/">Coova Technologies, LLC</a>, All Rights Reserved.</i>]]></bottom>
+          <stylesheetfile>${basedir}/../html/style.css</stylesheetfile>
+          <doctitle><![CDATA[<h1>${project.description} ${project.version}</h1>]]></doctitle>
+          <bottom>
+            <![CDATA[<i>Copyright &#169; 2011 <a target="top" href="http://www.coova.org/">Coova Technologies, LLC</a>, All Rights Reserved.</i>]]></bottom>
         </configuration>
       </plugin>
     </plugins>
   </reporting>
-
 
 </project>

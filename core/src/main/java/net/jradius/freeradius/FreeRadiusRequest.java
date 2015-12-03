@@ -28,7 +28,7 @@ import net.jradius.packet.attribute.AttributeList;
 import net.jradius.server.JRadiusRequest;
 import net.jradius.server.JRadiusServer;
 
-import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool2.ObjectPool;
 
 
 /**

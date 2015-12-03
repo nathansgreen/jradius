@@ -53,7 +53,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class WebServiceListener extends TCPListener implements InitializingBean, CacheEventListener
 {
     protected String cacheName = "ws-requests";
-    protected Map requestMap;
+    protected Map<String, WebServiceRequestObject> requestMap;
     protected CacheManager cacheManager;
     protected Ehcache requestCache;
     protected Integer timeToLive;
@@ -219,8 +219,8 @@ public class WebServiceListener extends TCPListener implements InitializingBean,
 
     public void afterPropertiesSet() throws Exception
     {
-        if (idleTime == null) idleTime = new Integer(120);
-        if (timeToLive == null) timeToLive = new Integer(180);
+        if (idleTime == null) idleTime = 120;
+        if (timeToLive == null) timeToLive = 120;
         if (requestMap != null) return;
         
         if (requestCache == null) 
@@ -234,7 +234,7 @@ public class WebServiceListener extends TCPListener implements InitializingBean,
         
             if (requestCache == null)
             {
-                requestCache = new Cache(cacheName, 2000, true, false, timeToLive.intValue(), idleTime.intValue());
+                requestCache = new Cache(cacheName, 2000, true, false, timeToLive, idleTime);
                 cacheManager.addCache(requestCache);
             }
         }
@@ -297,7 +297,7 @@ public class WebServiceListener extends TCPListener implements InitializingBean,
         return requestMap;
     }
 
-    public void setRequestMap(Map requestMap)
+    public void setRequestMap(Map<String, WebServiceRequestObject> requestMap)
     {
         this.requestMap = requestMap;
     }

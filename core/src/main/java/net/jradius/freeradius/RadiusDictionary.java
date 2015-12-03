@@ -111,7 +111,7 @@ public class RadiusDictionary
         public String num;
         public String pkg;
         public String extra;
-		public LinkedHashMap attrMap = new LinkedHashMap();
+        public LinkedHashMap attrMap = new LinkedHashMap();
         public VendorDesc(String n, String m, String p, String e)
         {
             name = n; num = m; pkg = p; extra = e;
@@ -236,7 +236,7 @@ public class RadiusDictionary
                     }
                     map.put(attrName, new AttrDesc(attrName, attrNum, attrType, attrExtra, attrVendor));
                     //RadiusLog.error(line);
-                	System.out.println("Seen = " + attrName);
+                    System.out.println("Seen = " + attrName);
                     seenNames.put(attrName.toLowerCase(), attrNum);
                 }
             }

@@ -45,8 +45,8 @@ import net.sf.ehcache.Element;
 public class InitTunnelSessionHandler extends RadiusSessionHandler
 {
     private Cache tlsTunnels;
-    private HashMap realms = new HashMap();
-    
+    private HashMap<String, String> realms = new HashMap<String, String>();
+
     /**
      * This handler is to be chained before the actual InitSessionHandler. 
      * In the event the request is the inner request of a TLS tunnel, the associated
@@ -58,9 +58,9 @@ public class InitTunnelSessionHandler extends RadiusSessionHandler
         int type = request.getType();
         RadiusPacket req = request.getRequestPacket();
 
-        String fullUserName  	= (String) req.getAttributeValue(Attr_UserName.TYPE);
-        String stripUserName 	= null;
-        String realm     		= null;
+        String fullUserName      = (String) req.getAttributeValue(Attr_UserName.TYPE);
+        String stripUserName     = null;
+        String realm             = null;
 
         JRadiusSession session = request.getSession();
 
@@ -77,19 +77,19 @@ public class InitTunnelSessionHandler extends RadiusSessionHandler
         }
 
         if (type == JRadiusServer.JRADIUS_authorize &&
-	        req.findAttribute(Attr_FreeRADIUSProxiedTo.TYPE) != null)
-	    {
+            req.findAttribute(Attr_FreeRADIUSProxiedTo.TYPE) != null)
+        {
             // If we are proxy-ing the request to ourselves, 
-	        // this is an inner-tunnel authentication.
-	        RadiusSessionKeyProvider skp = (RadiusSessionKeyProvider)JRadiusSessionManager.getManager(request.getSender()).getSessionKeyProvider(request.getSender());
-	        Element element = tlsTunnels.get(skp.getTunneledRequestKey(request));
+            // this is an inner-tunnel authentication.
+            RadiusSessionKeyProvider skp = (RadiusSessionKeyProvider)JRadiusSessionManager.getManager(request.getSender()).getSessionKeyProvider(request.getSender());
+            Element element = tlsTunnels.get(skp.getTunneledRequestKey(request));
             if (element == null) return false;
             String sessionKey = (String)element.getValue();
-	        if (sessionKey == null) 
-	        {
-	            request.setReturnValue(JRadiusServer.RLM_MODULE_REJECT);
-	            return true;
-	        }
+            if (sessionKey == null) 
+            {
+                request.setReturnValue(JRadiusServer.RLM_MODULE_REJECT);
+                return true;
+            }
 
             session = JRadiusSessionManager.getManager(request.getSender()).getSession(request, sessionKey);
             if (session == null) throw new RadiusException("Could not find on-going tunneled session: " + sessionKey);
@@ -101,18 +101,18 @@ public class InitTunnelSessionHandler extends RadiusSessionHandler
             request.setSession(session);
 
             String r = (String)req.getAttributeValue(Attr_Realm.TYPE);
-	        if (r != null)
-	        {
-	            if ("DEFAULT".equals(r))
-	            {
-	                r = realm;
-	            }
-	            if (!isLocalRealm(r)) 
-	            {
-	                session.setProxyToRealm(r);
-	            }
-	        }
- 	    }
+            if (r != null)
+            {
+                if ("DEFAULT".equals(r))
+                {
+                    r = realm;
+                }
+                if (!isLocalRealm(r)) 
+                {
+                    session.setProxyToRealm(r);
+                }
+            }
+         }
 
         return false;
     }

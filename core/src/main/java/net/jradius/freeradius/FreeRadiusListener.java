@@ -33,9 +33,11 @@ import net.jradius.server.JRadiusEvent;
 import net.jradius.server.ListenerRequest;
 import net.jradius.server.TCPListener;
 
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.PoolableObjectFactory;
-import org.apache.commons.pool.impl.SoftReferenceObjectPool;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 
 /**
  * FreeRADIUS/rlm_jradius Listener
@@ -47,31 +49,26 @@ public class FreeRadiusListener extends TCPListener
 {
     private static final FreeRadiusFormat format = new FreeRadiusFormat();
     
-    private ObjectPool requestObjectPool = new SoftReferenceObjectPool(new PoolableObjectFactory() 
-    {
-		public boolean validateObject(Object arg0) {
-			return true;
-		}
-		
-		public void passivateObject(Object arg0) throws Exception {
-		}
-		
-		public Object makeObject() throws Exception {
-			return new FreeRadiusRequest();
-		}
-		
-		public void destroyObject(Object arg0) throws Exception {
-		}
-		
-		public void activateObject(Object arg0) throws Exception {
-		}
-	});
+    private ObjectPool<FreeRadiusRequest> requestObjectPool = new SoftReferenceObjectPool<FreeRadiusRequest>(
+        new BasePooledObjectFactory<FreeRadiusRequest>()
+        {
+            @Override
+            public FreeRadiusRequest create() throws Exception {
+               return new FreeRadiusRequest();
+            }
+
+            @Override
+            public PooledObject<FreeRadiusRequest> wrap(FreeRadiusRequest obj) {
+                return new DefaultPooledObject<FreeRadiusRequest>(obj);
+            }
+        }
+    );
     
 
     public JRadiusEvent parseRequest(ListenerRequest listenerRequest, ByteBuffer notUsed, InputStream in) throws Exception 
     {
-    	FreeRadiusRequest request = (FreeRadiusRequest) requestObjectPool.borrowObject();
-    	request.setBorrowedFromPool(requestObjectPool);
+        FreeRadiusRequest request = requestObjectPool.borrowObject();
+        request.setBorrowedFromPool(requestObjectPool);
 
         int totalLength  = (int) (RadiusFormat.readUnsignedInt(in) - 4);
         int readOffset = 0;
@@ -80,7 +77,7 @@ public class FreeRadiusListener extends TCPListener
         
         if (totalLength < 0 || totalLength > buffer.capacity()) 
         {
-        	return null;
+            return null;
         }
         
         buffer.clear();
@@ -88,9 +85,9 @@ public class FreeRadiusListener extends TCPListener
         
         while (readOffset < totalLength)
         {
-        	int result = in.read(payload, readOffset, totalLength - readOffset);
-        	if (result < 0) return null;
-        	readOffset += result;
+            int result = in.read(payload, readOffset, totalLength - readOffset);
+            if (result < 0) return null;
+            readOffset += result;
         }
         
         buffer.limit(totalLength);
@@ -114,7 +111,7 @@ public class FreeRadiusListener extends TCPListener
 
         if (length > buffer.remaining())
         {
-        	throw new RadiusException("bad length");
+            throw new RadiusException("bad length");
         }
         
         AttributeList configItems = new AttributeList();

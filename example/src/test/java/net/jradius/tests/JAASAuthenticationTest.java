@@ -120,7 +120,7 @@ public class JAASAuthenticationTest
 
     	System.out.println("User has " + mySubject.getPublicCredentials().size() + " Public Credential(s)");
 
-    	PrivilegedAction action = new TestAction();
+    	PrivilegedAction<?> action = new TestAction();
     	Subject.doAsPrivileged(mySubject, action, null);
     	System.exit(0);
     }

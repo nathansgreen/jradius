@@ -7,76 +7,71 @@
   <name>${project.artifactId}-${project.version}</name>
   <version>1.1.6-SNAPSHOT</version>
   <description>Server classes</description>
-  
+
   <parent>
     <groupId>net.jradius</groupId>
     <artifactId>jradius</artifactId>
     <version>1.1.6-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  
+
   <dependencies>
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-core</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
-    
+
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-dictionary</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-extended</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>net.jradius</groupId>
       <artifactId>jradius-example</artifactId>
-      <version>1.1.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
-      <version>3.0.5.RELEASE</version>
     </dependency>
 
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.5</source>
-	  <target>1.5</target>
-	</configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <id>copy-dependencies</id>
-	    <phase>package</phase>
-	    <goals>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
               <goal>copy-dependencies</goal>
-	    </goals>
-	    <configuration>
+            </goals>
+            <configuration>
               <outputDirectory>target/lib</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
-	    </configuration>
-	  </execution>
-	</executions>
-      </plugin> 
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -84,49 +79,49 @@
             <descriptor>assembly.xml</descriptor>
           </descriptors>
         </configuration>
-	<executions>
+        <executions>
           <execution>
             <id>make-assembly</id>
             <phase>package</phase>
             <goals>
               <goal>attached</goal>
-	    </goals>
+            </goals>
           </execution>
         </executions>
       </plugin>
     </plugins>
 
     <pluginManagement>
-		<plugins>
-		    <!-- Ignore/Execute plugin execution -->
-		    <plugin>
-		        <groupId>org.eclipse.m2e</groupId>
-		        <artifactId>lifecycle-mapping</artifactId>
-		        <version>1.0.0</version>
-		        <configuration>
-		            <lifecycleMappingMetadata>
-		                <pluginExecutions>
-		                    <!-- copy-dependency plugin -->
-		                    <pluginExecution>
-		                        <pluginExecutionFilter>
-		                            <groupId>org.apache.maven.plugins</groupId>
-		                            <artifactId>maven-dependency-plugin</artifactId>
-		                            <versionRange>[1.0.0,)</versionRange>
-		                            <goals>
-		                                <goal>copy-dependencies</goal>
-		                            </goals>
-		                        </pluginExecutionFilter>
-		                        <action>
-		                            <ignore />
-		                        </action>
-		                    </pluginExecution>
-		                </pluginExecutions>
-		            </lifecycleMappingMetadata>
-		        </configuration>
-		    </plugin>
-	   </plugins>
-   </pluginManagement>
-   
-    </build>
+      <plugins>
+        <!-- Ignore/Execute plugin execution -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <!-- copy-dependency plugin -->
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[1.0.0,)</versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore/>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
 
 </project>
