@@ -57,11 +57,11 @@ public interface JRadiusSession extends Serializable
 
     // default attribute map names
     public static final String SESSION_ATTRIBUTE_LOCATION_ID = "locationID";
-	public static final String SESSION_ATTRIBUTE_LOCATION_TYPE = "locationType";
-	public static final String SESSION_ATTRIBUTE_LOCATION_NAME = "locationName";
-	public static final String SESSION_ATTRIBUTE_LOCATION_CITY = "locationCity";
-	public static final String SESSION_ATTRIBUTE_LOCATION_STATE_PROVINCE = "locationStateProvince";
-	public static final String SESSION_ATTRIBUTE_LOCATION_COUNTRY_CODE = "locationCountryCode";
+    public static final String SESSION_ATTRIBUTE_LOCATION_TYPE = "locationType";
+    public static final String SESSION_ATTRIBUTE_LOCATION_NAME = "locationName";
+    public static final String SESSION_ATTRIBUTE_LOCATION_CITY = "locationCity";
+    public static final String SESSION_ATTRIBUTE_LOCATION_STATE_PROVINCE = "locationStateProvince";
+    public static final String SESSION_ATTRIBUTE_LOCATION_COUNTRY_CODE = "locationCountryCode";
     
     public JRadiusLogEntry getLogEntry(JRadiusEvent event, String key);
     
@@ -465,26 +465,26 @@ public interface JRadiusSession extends Serializable
      */
     public void setMinBandwidthUp(Long minBandwidthUp);
 
-	public Long getMaxOctetsDown();
+    public Long getMaxOctetsDown();
 
-	public void setMaxOctetsDown(Long maxOctetsDown);
+    public void setMaxOctetsDown(Long maxOctetsDown);
 
-	public Long getMaxOctetsUp(); 
+    public Long getMaxOctetsUp(); 
 
-	public void setMaxOctetsUp(Long maxOctetshUp); 
-	
-	public Long getMaxOctetsTotal();
+    public void setMaxOctetsUp(Long maxOctetshUp); 
+    
+    public Long getMaxOctetsTotal();
 
-	public void setMaxOctetsTotal(Long maxOctetsTotal);
+    public void setMaxOctetsTotal(Long maxOctetsTotal);
 
-	public String getNasType() ;
+    public String getNasType() ;
 
-	public void setNasType(String nasType);
+    public void setNasType(String nasType);
 
-	public String getRedirectURL();
+    public String getRedirectURL();
 
-	public void setRedirectURL(String redirectURL);
-	
+    public void setRedirectURL(String redirectURL);
+    
     public String getJRadiusKey();
 
     public void setJRadiusKey(String jRadiusKey);
@@ -493,5 +493,5 @@ public interface JRadiusSession extends Serializable
 
     //public void setLastRadiusRequest(JRadiusRequest lastRadiusRequest);
 
-	public boolean isLogging();
+    public boolean isLogging();
 }

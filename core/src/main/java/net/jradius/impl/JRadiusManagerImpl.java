@@ -3,6 +3,7 @@ package net.jradius.impl;
 import net.jradius.JRadiusManager;
 import net.jradius.log.RadiusLog;
 import net.jradius.server.EventDispatcher;
+import net.jradius.server.JRadiusEvent;
 import net.jradius.server.JRadiusServer;
 import net.jradius.server.config.Configuration;
 
@@ -21,7 +22,7 @@ public class JRadiusManagerImpl implements InitializingBean, BeanFactoryAware, D
 {
     protected final Log log = LogFactory.getLog(getClass());
     private Boolean startOnLoad = Boolean.FALSE;
-    private EventDispatcher eventDispatcher;
+    private EventDispatcher<? extends JRadiusEvent> eventDispatcher;
     private BeanFactory beanFactory;
     private JRadiusServer jRadiusServer;
     private String configFile;

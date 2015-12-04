@@ -49,7 +49,7 @@ import net.jradius.server.TCPListenerRequest;
  * 
  * @author David Bird
  */
-public class WebServiceProcessor extends Processor<WebServiceRequest>
+public class WebServiceProcessor extends Processor<WebServiceRequest, TCPListenerRequest<WebServiceRequest>>
 {
     protected static final byte[] newline = toHTTPBytes("\r\n");
     protected static final byte[] ctype = toHTTPBytes("Content-Type: text/xml\r\n");
@@ -60,11 +60,11 @@ public class WebServiceProcessor extends Processor<WebServiceRequest>
     protected static final byte[] found = toHTTPBytes(" 302 Found\r\n");
     protected static final byte[] unauthorized = toHTTPBytes(" 401 Unauthorized\r\n");
     private boolean wantClientCertificates = true;
-    
-    protected void processRequest(ListenerRequest<WebServiceRequest, ? extends ListenerRequest> listenerRequest) throws Exception
+
+    @Override
+    protected void processRequest(TCPListenerRequest<WebServiceRequest> listenerRequest) throws Exception
     {
-        TCPListenerRequest<WebServiceRequest> tcpListenerRequest = (TCPListenerRequest<WebServiceRequest>) listenerRequest;
-        Socket socket = tcpListenerRequest.getSocket();
+        Socket socket = listenerRequest.getSocket();
         socket.setSoTimeout(15000); // 15 second read timeout
         
         X509Certificate x509 = null;
@@ -94,7 +94,7 @@ public class WebServiceProcessor extends Processor<WebServiceRequest>
 
         try
         {
-            request = tcpListenerRequest.getRequestEvent();
+            request = listenerRequest.getRequestEvent();
             request.setServerVariableMap(listenerRequest.getServerVariables());
             request.setCertificate(x509);
             request.setApplicationContext(getApplicationContext());
@@ -110,7 +110,7 @@ public class WebServiceProcessor extends Processor<WebServiceRequest>
                 try { os.flush(); } catch (Exception e) { }
             }
 
-            if (!tcpListenerRequest.isKeepAlive())
+            if (!listenerRequest.isKeepAlive())
             {
                 if (os != null)
                 {

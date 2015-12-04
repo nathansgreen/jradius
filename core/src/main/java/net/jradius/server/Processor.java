@@ -34,21 +34,24 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Base abstract class of all Processors
- * 
+ *
+ * @param <E> some {@code JRadiusEvent}
+ * @param <R> some {@code ListenerRequest}
  * @author Gert Jan Verhoog
  * @author David Bird
  */
-public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread implements ApplicationContextAware
+public abstract class Processor<E extends JRadiusEvent, R extends ListenerRequest<E>> extends JRadiusThread
+    implements ApplicationContextAware
 {
     protected Log log = LogFactory.getLog(getClass());
 
     private ApplicationContext applicationContext;
 
-    private EventDispatcher eventDispatcher;
+    private EventDispatcher<E> eventDispatcher;
     
     private List<JRCommand> requestHandlers;
     
-    private BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> queue;
+    private BlockingQueue<R> queue;
     
     private boolean active = true;
 
@@ -62,22 +65,22 @@ public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread im
      * 
      * @param q the RequestQueue;
      */
-    public void setRequestQueue(BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> q)
+    public void setRequestQueue(BlockingQueue<R> q)
     {
         queue = q;
     }
 
-    public BlockingQueue<ListenerRequest<E, ? extends ListenerRequest>> getRequestQueue()
+    public BlockingQueue<R> getRequestQueue()
     {
         return queue;
     }
 
-    public EventDispatcher getEventDispatcher()
+    public EventDispatcher<E> getEventDispatcher()
     {
         return eventDispatcher;
     }
     
-    public void setEventDispatcher(EventDispatcher eventDispatcher)
+    public void setEventDispatcher(EventDispatcher<E> eventDispatcher)
     {
         this.eventDispatcher = eventDispatcher;
     }
@@ -92,7 +95,7 @@ public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread im
         return requestHandlers;
     }
 
-    protected abstract void processRequest(ListenerRequest<E, ? extends ListenerRequest> listenerRequest) throws Exception;
+    protected abstract void processRequest(R listenerRequest) throws Exception;
 
     public void run()
     {
@@ -124,7 +127,7 @@ public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread im
             throw new IllegalArgumentException("Expected ListenerRequest but found " + queueElement.getClass().getName());
         }
 
-        ListenerRequest request = (ListenerRequest) queueElement;
+        R request = (R) queueElement;
 
         try
         {
@@ -132,7 +135,7 @@ public abstract class Processor<E extends JRadiusEvent> extends JRadiusThread im
         }
         finally
         {
-            ObjectPool<ListenerRequest<E, ? extends ListenerRequest>> pool = request.getBorrowedFromPool();
+            ObjectPool<R> pool = request.getBorrowedFromPool();
 
             if (pool != null)
             {

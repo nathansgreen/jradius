@@ -76,7 +76,7 @@ public class JRadiusServer implements InitializingBean
     private List<Processor> processors;
     private List<Listener> listeners;
     
-    private EventDispatcher eventDispatcher;
+    private EventDispatcher<? extends JRadiusEvent> eventDispatcher;
     
     private boolean running = false;
 
@@ -98,27 +98,27 @@ public class JRadiusServer implements InitializingBean
         listeners = new LinkedList<Listener>();
     }
 
-    public JRadiusServer(EventDispatcher eventDispatcher) throws Exception
+    public JRadiusServer(EventDispatcher<? extends JRadiusEvent> eventDispatcher) throws Exception
     {
-    	this();
-    	this.eventDispatcher = eventDispatcher;
+        this();
+        this.eventDispatcher = eventDispatcher;
     }
 
     public void afterPropertiesSet() throws Exception 
     {
-    	if (eventDispatcher == null)
-    	{
-    		eventDispatcher = new EventDispatcher();
-    	}
-    	initializeServer();
-	}
+        if (eventDispatcher == null)
+        {
+            eventDispatcher = new EventDispatcher<JRadiusEvent>();
+        }
+        initializeServer();
+    }
 
     public boolean isRunning()
     {
         return this.running;
     }
 
-	/**
+    /**
      * Start the JRadiusServer. Make sure the server is
      * initialized first by calling initializeServer()
      */
@@ -200,8 +200,8 @@ public class JRadiusServer implements InitializingBean
         }
         for (ListenerConfigurationItem listenerConfig :  Configuration.getListenerConfigs())
         {
-            LinkedBlockingQueue<ListenerRequest<JRadiusEvent, ? extends ListenerRequest>> queue =
-                new LinkedBlockingQueue<ListenerRequest<JRadiusEvent, ? extends ListenerRequest>>();
+            LinkedBlockingQueue<ListenerRequest<JRadiusEvent>> queue =
+                new LinkedBlockingQueue<ListenerRequest<JRadiusEvent>>();
             createListenerWithConfigAndQueue(listenerConfig, queue);
             createProcessorsWithConfigAndQueue(listenerConfig, queue);
         }
@@ -210,21 +210,22 @@ public class JRadiusServer implements InitializingBean
 
     
     private void createProcessorsWithConfigAndQueue(ListenerConfigurationItem listenerConfig,
-        BlockingQueue<ListenerRequest<JRadiusEvent, ? extends ListenerRequest>> queue) throws Exception
+        BlockingQueue<ListenerRequest<JRadiusEvent>> queue) throws Exception
     {
         for (int j = 0; j < listenerConfig.getNumberOfThreads(); j++)
         {
-            Processor<JRadiusEvent> processor = newProcessorForName(listenerConfig.getProcessorClassName());
+            Processor<JRadiusEvent, ListenerRequest<JRadiusEvent>> processor = newProcessorForName(listenerConfig.getProcessorClassName());
             processor.setRequestQueue(queue);
             RadiusLog.info("Created processor " + processor.getName());
             setPacketHandlersForProcessor(listenerConfig, processor);
             setEventHandlersForProcessor(listenerConfig, eventDispatcher);
-            processor.setEventDispatcher(eventDispatcher);
+            processor.setEventDispatcher((EventDispatcher<JRadiusEvent>) eventDispatcher);
             processors.add(processor);
         }
     }
 
-    private void setPacketHandlersForProcessor(ListenerConfigurationItem cfg, Processor<? extends JRadiusEvent> processor)
+    private void setPacketHandlersForProcessor(ListenerConfigurationItem cfg, Processor<JRadiusEvent,
+        ListenerRequest<JRadiusEvent>> processor)
     {
         List<JRCommand> requestHandlers = cfg.getRequestHandlers();
         if (requestHandlers == null)
@@ -241,7 +242,7 @@ public class JRadiusServer implements InitializingBean
         processor.setRequestHandlers(requestHandlers);
     }
     
-    private void setEventHandlersForProcessor(ListenerConfigurationItem cfg, EventDispatcher dispatcher)
+    private void setEventHandlersForProcessor(ListenerConfigurationItem cfg, EventDispatcher<? extends JRadiusEvent> dispatcher)
     {
         List<JRCommand> eventHandlers = cfg.getEventHandlers();
         if (eventHandlers == null)
@@ -256,10 +257,10 @@ public class JRadiusServer implements InitializingBean
         dispatcher.setEventHandlers(eventHandlers);
     }
     
-    private void createListenerWithConfigAndQueue(ListenerConfigurationItem listenerConfig, LinkedBlockingQueue<ListenerRequest
-        <JRadiusEvent, ? extends ListenerRequest>> queue) throws Exception
+    private void createListenerWithConfigAndQueue(ListenerConfigurationItem listenerConfig,
+        BlockingQueue<ListenerRequest<JRadiusEvent>> queue) throws Exception
     {
-        Listener<JRadiusEvent, ListenerRequest<JRadiusEvent, ? extends ListenerRequest>> listener = newListenerWithConfig(listenerConfig);
+        Listener<JRadiusEvent, ListenerRequest<JRadiusEvent>> listener = newListenerWithConfig(listenerConfig);
         listener.setRequestQueue(queue);
 
         this.listeners.add(listener);
@@ -267,17 +268,17 @@ public class JRadiusServer implements InitializingBean
         RadiusLog.info("Created listener " + listener.getName());
     }
     
-    private Listener<JRadiusEvent, ListenerRequest<JRadiusEvent, ? extends ListenerRequest>> newListenerWithConfig(ListenerConfigurationItem cfg) throws Exception
+    private Listener<JRadiusEvent, ListenerRequest<JRadiusEvent>> newListenerWithConfig(ListenerConfigurationItem cfg) throws Exception
     {
-        Listener<JRadiusEvent, ListenerRequest<JRadiusEvent, ? extends ListenerRequest>> listener = Configuration.getBean(cfg.getClassName());
+        Listener<JRadiusEvent, ListenerRequest<JRadiusEvent>> listener = Configuration.getBean(cfg.getClassName());
         listener.setConfiguration(cfg);
 
         return listener;
     }
     
-    private Processor<JRadiusEvent> newProcessorForName(String className) throws Exception
+    private Processor<JRadiusEvent, ListenerRequest<JRadiusEvent>> newProcessorForName(String className) throws Exception
     {
-        Processor<JRadiusEvent> processor = Configuration.getBean(className);
+        Processor<JRadiusEvent, ListenerRequest<JRadiusEvent>> processor = Configuration.getBean(className);
         return processor;
     }
     
@@ -299,12 +300,12 @@ public class JRadiusServer implements InitializingBean
         }
     }
     
-    public void setEventDispatcher(EventDispatcher eventDispatcher) 
+    public void setEventDispatcher(EventDispatcher<? extends JRadiusEvent> eventDispatcher)
     {
-		this.eventDispatcher = eventDispatcher;
-	}
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	public EventDispatcher getEventDispatcher()
+    public EventDispatcher<? extends JRadiusEvent> getEventDispatcher()
     {
         return eventDispatcher;
     }

@@ -30,22 +30,22 @@ import java.util.Map;
 import org.apache.commons.pool2.ObjectPool;
 
 /**
- * @param <I> implementation of {@code ListenerRequest}
+ * @param <E> some {@code JRadiusEvent}
  * @author David Bird
  */
-public abstract class ListenerRequest<E extends JRadiusEvent, I extends ListenerRequest<E, I>>
+public abstract class ListenerRequest<E extends JRadiusEvent>
 {
     protected E event;
-    protected Listener<E, I> listener;
-    protected ObjectPool<I> borrowedFromPool;
+    protected Listener<E, ListenerRequest<E>> listener;
+    private ObjectPool<? extends ListenerRequest<E>> borrowedFromPool;
     
     public ListenerRequest()
     {
     }
 
-    public ListenerRequest(Listener<E, I> listener)
+    public <L extends Listener<E, ? extends ListenerRequest<E>>> ListenerRequest(L listener)
     {
-        this.listener = listener;
+        this.listener = (Listener<E, ListenerRequest<E>>) listener;
     }
     
     public ByteBuffer getByteBufferIn() throws IOException
@@ -69,14 +69,14 @@ public abstract class ListenerRequest<E extends JRadiusEvent, I extends Listener
         return listener;
     }
 
-    public void getListener(Listener<E, I> listener)
+    public <L extends Listener<E, ? extends ListenerRequest<E>>> void setListener(L listener)
     {
-        this.listener = listener;
+        this.listener = (Listener<E, ListenerRequest<E>>)listener;
     }
 
     public E getEventFromListener() throws Exception
     {
-        E e = listener.parseRequest((I) this, getByteBufferIn(), getInputStream());
+        E e = listener.parseRequest(this, getByteBufferIn(), getInputStream());
         if (e == null) return null;
         e.setListener(listener);
         return e;
@@ -97,11 +97,11 @@ public abstract class ListenerRequest<E extends JRadiusEvent, I extends Listener
         event = null;
     }
 
-    public ObjectPool<I> getBorrowedFromPool() {
-        return borrowedFromPool;
+    public <R extends ListenerRequest<E>> ObjectPool<R> getBorrowedFromPool() {
+        return (ObjectPool<R>)borrowedFromPool;
     }
 
-    public void setBorrowedFromPool(ObjectPool<I> borrowedFromPool) {
+    public  <R extends ListenerRequest<E>> void setBorrowedFromPool(ObjectPool<R> borrowedFromPool) {
         this.borrowedFromPool = borrowedFromPool;
     }
 }

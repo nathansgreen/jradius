@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * @author David Bird
  */
-public class TCPListenerRequest<E extends JRadiusEvent> extends ListenerRequest<E, TCPListenerRequest<E>>
+public class TCPListenerRequest<E extends JRadiusEvent> extends ListenerRequest<E>
 {
     private Socket socket;
     private InputStream bin;
@@ -61,7 +61,7 @@ public class TCPListenerRequest<E extends JRadiusEvent> extends ListenerRequest<
     
     public void accept(Socket socket, InputStream bin, OutputStream bout, TCPListener<E> listener, boolean getEvent, boolean keepAlive) throws Exception
     {
-        this.listener = listener;
+        setListener(listener);
         this.socket = socket;
         this.bin = bin;
         this.bout = bout;
@@ -69,7 +69,7 @@ public class TCPListenerRequest<E extends JRadiusEvent> extends ListenerRequest<
         
         if (getEvent)
         {
-            this.event = getEventFromListener();
+            getRequestEvent();
         }
     }
 

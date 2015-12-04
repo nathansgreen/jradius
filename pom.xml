@@ -179,6 +179,9 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+          <compilerArgs>
+            <arg>-Xlint:unchecked</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
     </plugins>

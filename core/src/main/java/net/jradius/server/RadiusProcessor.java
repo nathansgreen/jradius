@@ -37,7 +37,7 @@ import net.jradius.session.JRadiusSessionManager;
  * 
  * @author David Bird
  */
-public abstract class RadiusProcessor extends Processor
+public abstract class RadiusProcessor<E extends JRadiusEvent> extends Processor<E, ListenerRequest<E>>
 {
     public RadiusProcessor()
     {
@@ -45,7 +45,7 @@ public abstract class RadiusProcessor extends Processor
     }
     
     abstract protected void logReturnCode(int result, JRCommand handler);
-    
+
     protected int handleRadiusException(JRadiusRequest request, RadiusException e)
     {
         JRadiusSession session = request.getSession();
@@ -197,7 +197,7 @@ public abstract class RadiusProcessor extends Processor
             if (session != null && session.isLogging())
             {
 	            HandlerLogEvent log = new HandlerLogEvent(request, request.getSessionKey(), result);
-	            getEventDispatcher().post(log);
+	            getEventDispatcher().post((E)log);
             }
         }
         finally

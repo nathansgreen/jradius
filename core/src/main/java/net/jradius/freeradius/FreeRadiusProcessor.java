@@ -36,6 +36,7 @@ import net.jradius.server.JRadiusServer;
 import net.jradius.server.ListenerRequest;
 import net.jradius.server.RadiusProcessor;
 import net.jradius.server.config.Configuration;
+import net.jradius.server.event.HandlerLogEvent;
 
 /**
  * FreeRADIUS Request Processor
@@ -43,48 +44,49 @@ import net.jradius.server.config.Configuration;
  * @author Gert Jan Verhoog
  * @author David Bird
  */
-public class FreeRadiusProcessor extends RadiusProcessor
+public class FreeRadiusProcessor extends RadiusProcessor<FreeRadiusRequest>
 {
     private static final FreeRadiusFormat format = new FreeRadiusFormat();
 
     public FreeRadiusProcessor()
     {
-    	super();
+        super();
     }
-    
-    protected void processRequest(ListenerRequest listenerRequest) throws Exception
+
+    @Override
+    protected void processRequest(ListenerRequest<FreeRadiusRequest> listenerRequest) throws Exception
     {
-        FreeRadiusRequest request = (FreeRadiusRequest) listenerRequest.getRequestEvent();
+        FreeRadiusRequest request = listenerRequest.getRequestEvent();
 
         try
         { 
-	        try
-	        {
-	            request.setApplicationContext(getApplicationContext());
-	            request.setReturnValue(runPacketHandlers(request));
-	        }
-	        catch (Throwable th)
-	        {
-	            request.setReturnValue(JRadiusServer.RLM_MODULE_FAIL);
-	            RadiusLog.error(">>> processRequest(): Error during processing RunPacketHandlers block", th);
-	        }
-	
-	        try
-	        {
-	            this.writeResponse(request, listenerRequest.getOutputStream());
-	        }
-	        catch(Throwable e)
-	        {
-	            RadiusLog.error(">>> processRequest(): Error during writing response", e);
-	        }
+            try
+            {
+                request.setApplicationContext(getApplicationContext());
+                request.setReturnValue(runPacketHandlers(request));
+            }
+            catch (Throwable th)
+            {
+                request.setReturnValue(JRadiusServer.RLM_MODULE_FAIL);
+                RadiusLog.error(">>> processRequest(): Error during processing RunPacketHandlers block", th);
+            }
+    
+            try
+            {
+                this.writeResponse(request, listenerRequest.getOutputStream());
+            }
+            catch(Throwable e)
+            {
+                RadiusLog.error(">>> processRequest(): Error during writing response", e);
+            }
         }
         finally 
         {
-        	if (request != null)
-        	{
-	            PacketFactory.recycle(request.getPackets());
-	            request.getConfigItems().clear();
-        	}
+            if (request != null)
+            {
+                PacketFactory.recycle(request.getPackets());
+                request.getConfigItems().clear();
+            }
         }
     }
 
@@ -108,7 +110,7 @@ public class FreeRadiusProcessor extends RadiusProcessor
         
         for (int i=0; i < packetCount; i++)
         {
-        	format.packPacket(rp[i], null, buffer, false);
+            format.packPacket(rp[i], null, buffer, false);
         }
 
         int pktsLength = buffer.position();

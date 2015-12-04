@@ -38,9 +38,9 @@ import net.jradius.session.JRadiusSessionManager;
  * @author Gert Jan Verhoog
  * @author David Bird
  */
-public class EventDispatcher extends JRadiusThread
+public class EventDispatcher<E extends JRadiusEvent> extends JRadiusThread
 {
-    private BlockingQueue<JRadiusEvent> eventQueue = new LinkedBlockingQueue<JRadiusEvent>();
+    private BlockingQueue<E> eventQueue = new LinkedBlockingQueue<E>();
     private List<JRCommand> eventHandlers = new LinkedList<JRCommand>();
     private volatile boolean active = false;
 
@@ -49,7 +49,7 @@ public class EventDispatcher extends JRadiusThread
         super();
     }
 
-    public void post(JRadiusEvent event)
+    public void post(E event)
     {
         while(getActive())
         {

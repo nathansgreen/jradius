@@ -66,7 +66,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
     private Cache sessionCache;
     private Cache logCache;
 
-    private EventDispatcher eventDispatcher;
+    private EventDispatcher<SessionExpiredEvent> eventDispatcher;
 
     /**
      * There is a single JRadiusSessionManager available that
@@ -166,7 +166,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
 
     public void shutdown()
     {
-    	if (cacheManager != null && cacheManager.getStatus() == Status.STATUS_ALIVE)
+        if (cacheManager != null && cacheManager.getStatus() == Status.STATUS_ALIVE)
         {
             cacheManager.shutdown();
         }
@@ -174,9 +174,9 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
     
     public void afterPropertiesSet() throws Exception
     {
-    	if ((sessionCache == null || logCache == null) && cacheManager == null) 
+        if ((sessionCache == null || logCache == null) && cacheManager == null) 
         {
-        	throw new RuntimeException("cacheManager required");
+            throw new RuntimeException("cacheManager required");
         }
 
         if (sessionCache == null) 
@@ -185,7 +185,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
 
             if (sessionCache == null)
             {
-            	sessionCache = new Cache(cacheName, 1000, true, false, maxInactiveInterval, maxInactiveInterval);
+                sessionCache = new Cache(cacheName, 1000, true, false, maxInactiveInterval, maxInactiveInterval);
                 cacheManager.addCache(sessionCache);
             }
         }
@@ -196,7 +196,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
 
             if (logCache == null)
             {
-            	logCache = new Cache(logCacheName, 100, true, false, maxInactiveInterval, maxInactiveInterval);
+                logCache = new Cache(logCacheName, 100, true, false, maxInactiveInterval, maxInactiveInterval);
                 cacheManager.addCache(logCache);
             }
         }
@@ -374,7 +374,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
 
         if (element != null)
         {
-        	session = (JRadiusSession) element.getValue();
+            session = (JRadiusSession) element.getValue();
         }
         
         if (session == null && request != null)
@@ -429,7 +429,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
     
     private void remove(Serializable key)
     {
-    	RadiusLog.debug("Removing session key: " + key);
+        RadiusLog.debug("Removing session key: " + key);
         sessionCache.remove(key);
     }
 
@@ -521,7 +521,7 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
 
     public Object clone() throws CloneNotSupportedException
     {
-    	throw new CloneNotSupportedException();
+        throw new CloneNotSupportedException();
     }
 
     public Ehcache getSessionCache()
@@ -534,12 +534,12 @@ public class JRadiusSessionManager implements InitializingBean, ApplicationConte
         this.sessionCache = sessionCache;
     }
 
-    public void setEventDispatcher(EventDispatcher eventDispatcher)
+    public void setEventDispatcher(EventDispatcher<SessionExpiredEvent> eventDispatcher)
     {
-		this.eventDispatcher = eventDispatcher;
-	}
+        this.eventDispatcher = eventDispatcher;
+    }
 
-	public ApplicationContext getApplicationContext()
+    public ApplicationContext getApplicationContext()
     {
         return applicationContext;
     }
